@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  database:
+    container_name: settlement-reader-db
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "password"
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./app/db-data:/var/lib/postgresql/data:rw
+    networks:
+      - settlement-reader
+
+  php:
+    container_name: settlement-reader-php
+    build:
+      context: ./php
+    volumes:
+      - ./app:/var/www/settlement-reader
+    networks:
+      - settlement-reader
+    depends_on:
+      - database
+
+  nginx:
+    container_name: settlement-reader-nginx
+    image: nginx:stable-alpine
+    environment:
+      VIRTUAL_HOST: settlement-reader.local
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./app:/var/www/settlement-reader
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - database
+    networks:
+      - settlement-reader
+
+###> symfony/mailer ###
+  mailer:
+    image: schickling/mailcatcher
+    ports: [1025, 1080]
+    depends_on:
+      - database
+      - php
+      - nginx
+    networks:
+      - settlement-reader
+###< symfony/mailer ###
+
+networks:
+  settlement-reader:
+    driver: bridge
+
