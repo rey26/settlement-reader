@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SettlementRepository::class)]
+#[ORM\Index(['name'])]
 class Settlement
 {
     #[ORM\Id]
@@ -41,6 +42,9 @@ class Settlement
 
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $childSettlements;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $webAddress = null;
 
     public function __construct()
     {
@@ -174,6 +178,18 @@ class Settlement
                 $childSettlement->setParent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getWebAddress(): ?string
+    {
+        return $this->webAddress;
+    }
+
+    public function setWebAddress(?string $webAddress): static
+    {
+        $this->webAddress = $webAddress;
 
         return $this;
     }

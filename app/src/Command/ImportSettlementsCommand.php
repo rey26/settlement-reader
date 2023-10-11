@@ -3,6 +3,8 @@
 namespace App\Command;
 
 use App\Service\SettlementService;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,11 +20,18 @@ use Throwable;
 class ImportSettlementsCommand extends Command
 {
     protected SettlementService $settlementService;
+    protected LoggerInterface $settlementLogger;
+    protected EntityManagerInterface $em;
 
     #[Required]
-    public function loadDependencies(SettlementService $settlementService): void
-    {
+    public function loadDependencies(
+        SettlementService $settlementService,
+        LoggerInterface $settlementLogger,
+        EntityManagerInterface $em,
+    ): void {
         $this->settlementService = $settlementService;
+        $this->settlementLogger = $settlementLogger;
+        $this->em = $em;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -32,11 +41,23 @@ class ImportSettlementsCommand extends Command
 
             $districtUrls = $this->settlementService->getAllDistricts();
 
+            foreach ($districtUrls as $district => $districtUrl) {
+                $settlementUrls = $this->settlementService->getSettlementsForDistrict($districtUrl);
+
+                foreach ($settlementUrls as $settlementUrl) {
+                    $this->settlementService->saveSettlement($district, $settlementUrl);
+                }
+                $this->em->flush();
+            }
+
             $io->success('Data imported successfully');
+            $this->settlementLogger->info('Data imported successfully');
 
             return Command::SUCCESS;
         } catch (Throwable $t) {
-            echo $t->getMessage() . PHP_EOL;
+            dd($t);
+            $io->error($t->getMessage());
+            $this->settlementLogger->error($t->getMessage());
 
             return Command::FAILURE;
         }

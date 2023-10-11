@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Settlement;
 use App\Enum\County;
 use App\Repository\SettlementRepository;
+use App\Service\Factory\SettlementFactory;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DomCrawler\Crawler;
@@ -16,9 +17,17 @@ class SettlementService
         protected SettlementRepository $settlementRepository,
         protected HttpBrowser $client = new HttpBrowser(),
         protected array $districtSettlements = [],
+        protected array $settlements = [],
     ) {
-        foreach ($settlementRepository->findDistrictSettlements() as $districtSettlement) {
-            $this->districtSettlements[$districtSettlement->getName()] = $districtSettlement;
+        foreach ($settlementRepository->findAll() as $settlement) {
+            $key = $settlement->getName();
+
+            if ($settlement->getParent()) {
+                $key .= '__' . $settlement->getParent()->getName();
+                $this->settlements[$key] = $settlement;
+            } else {
+                $this->districtSettlements[$key] = $settlement;
+            }
         }
     }
 
@@ -27,12 +36,12 @@ class SettlementService
         $districtUrls = [];
 
         foreach (County::cases() as $county) {
-            $districtUrls = $this->client->request('GET', "{$this->url}/kraj/{$county->name}.html")
-                ->filter('a.okreslink')
-                ->each(function (Crawler $node) {
-                    return $node->link()->getUri();
-                })
-            ;
+            $nodes = $this->client->request('GET', "{$this->url}/kraj/{$county->name}.html")
+                ->filter('a.okreslink')->getIterator();
+
+            foreach ($nodes as $node) {
+                $districtUrls[$node->nodeValue] = $node->getAttribute('href');
+            }
         }
 
         return $districtUrls;
@@ -42,20 +51,44 @@ class SettlementService
     {
         $settlementUrls = [];
 
-        $this->client->request('GET', $districtUrl)
-            ->filter('td[width="33%"]')
-            ->each(function (Crawler $node) {
-                return $node->link()->getUri();
-            })
-        ;
+        $urls = $this->client->request('GET', $districtUrl)
+            ->filter('td[width="33%"]')->getIterator();
+
+        foreach ($urls as $url) {
+            dd($url->nodeValue);
+        }
+        dd($urls->firstChild);
+            // ->each(function (Crawler $node) {
+            //     return $node->link()->getUri();
+            // })
+        // ;
 
         return $settlementUrls;
     }
 
-    public function saveSettlement(string $url): static
+    public function saveSettlement(string $districtName, string $url): static
     {
-        // create settlement
-        // find district settlement
+        $crawler = $this->client->request('GET', $url);
+        $name = $crawler->filter('td[class="obecmenuhead"]')->text();
+        $districtSettlement = $this->findDistrictSettlementByName($districtName);
+
+        if ($districtName === $name) {
+            $settlement = $districtSettlement;
+        } else {
+            $settlement = $this->findSettlementByNameAndDistrict($name, $districtName);
+        }
+
+        if ($settlement) {
+            $settlement = SettlementFactory::updateFromCrawler($settlement, $crawler);
+        } else {
+            $settlement = SettlementFactory::createFromCrawler($crawler, $name);
+        }
+
+        if ($districtName !== $name) {
+            $settlement->setParent($districtSettlement);
+        }
+
+        $this->settlementRepository->save($settlement);
 
         return $this;
     }
@@ -64,6 +97,17 @@ class SettlementService
     {
         if (array_key_exists($name, $this->districtSettlements)) {
             return $this->districtSettlements[$name];
+        }
+
+        return null;
+    }
+
+    private function findSettlementByNameAndDistrict(string $name, string $districtName): ?Settlement
+    {
+        $key = $districtName . '__' . $name;
+
+        if (array_key_exists($key, $this->settlements)) {
+            return $this->settlements[$key];
         }
 
         return null;
