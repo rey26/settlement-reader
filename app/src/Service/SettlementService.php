@@ -6,15 +6,16 @@ use App\Entity\Settlement;
 use App\Enum\County;
 use App\Repository\SettlementRepository;
 use App\Service\Factory\SettlementFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\DomCrawler\Crawler;
 
 class SettlementService
 {
     public function __construct(
         #[Autowire(env: 'SETTLEMENT_SOURCE_URL')] protected string $url,
         protected SettlementRepository $settlementRepository,
+        protected EntityManagerInterface $em,
         protected HttpBrowser $client = new HttpBrowser(),
         protected array $districtSettlements = [],
         protected array $settlements = [],
@@ -55,13 +56,8 @@ class SettlementService
             ->filter('td[width="33%"]')->getIterator();
 
         foreach ($urls as $url) {
-            dd($url->nodeValue);
+            $settlementUrls[] = $url->firstChild->getAttribute('href');
         }
-        dd($urls->firstChild);
-            // ->each(function (Crawler $node) {
-            //     return $node->link()->getUri();
-            // })
-        // ;
 
         return $settlementUrls;
     }
@@ -88,7 +84,7 @@ class SettlementService
             $settlement->setParent($districtSettlement);
         }
 
-        $this->settlementRepository->save($settlement);
+        $this->em->persist($settlement);
 
         return $this;
     }

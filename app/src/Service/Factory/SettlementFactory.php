@@ -11,7 +11,7 @@ class SettlementFactory
     {
         $settlement = (new Settlement())
             ->setName($name)
-            ->setMayorName(self::getTdValueByPreviousElement($crawler, 'Starosta:', 'Primátor:'))
+            ->setMayorName(self::getTdValueByPreviousElement($crawler, 'Starosta:', 'Primátor:') ?? 'uknown')
             ->setCityHallAddress(self::getCityHallAddress($crawler))
             ->setPhone(self::getTdValueByPreviousElement($crawler, 'Tel:'))
             ->setFax(self::getTdValueByPreviousElement($crawler, 'Fax:'))
@@ -54,12 +54,12 @@ class SettlementFactory
 
     private static function getCityHallAddress(Crawler $crawler): string
     {
+        return 'empty';
         $email = $crawler->filter('td')
             ->reduce(function (Crawler $node) {
                 return $node->text() === 'Email:';
             })
             ->first();
-
 
         $street = $email
             ->previousAll()

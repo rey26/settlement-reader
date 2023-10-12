@@ -25,7 +25,7 @@ class Settlement
     #[ORM\Column(length: 255)]
     private ?string $cityHallAddress = null;
 
-    #[ORM\Column(length: 30, nullable: true)]
+    #[ORM\Column(length: 130, nullable: true)]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
