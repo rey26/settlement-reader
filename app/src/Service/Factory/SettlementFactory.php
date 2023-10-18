@@ -17,7 +17,7 @@ class SettlementFactory
             ->setFax(self::getTdValueByPreviousElement($crawler, 'Fax:'))
             ->setEmail(self::getTdValueByPreviousElement($crawler, 'Email:'))
             ->setWebAddress(self::getTdValueByPreviousElement($crawler, 'Web:'))
-            // ->setCoatOfArmsPath(self::getCoatOfArmsPath($crawler, $name))
+            ->setCoatOfArmsPath(self::getCoatOfArmsRemoteUri($crawler, $name))
         ;
 
         return $settlement;
@@ -32,7 +32,7 @@ class SettlementFactory
             ->setFax(self::getTdValueByPreviousElement($crawler, 'Fax:'))
             ->setEmail(self::getTdValueByPreviousElement($crawler, 'Email:'))
             ->setWebAddress(self::getTdValueByPreviousElement($crawler, 'Web:'))
-            // ->setCoatOfArmsPath(self::getCoatOfArmsPath($crawler, $name))
+            ->setCoatOfArmsPath(self::getCoatOfArmsRemoteUri($crawler, $settlement->getName()))
         ;
 
         return $settlement;
@@ -75,23 +75,6 @@ class SettlementFactory
         return $street . ', ' . $postcodeAndTown;
     }
 
-    private static function getCoatOfArmsPath(Crawler $crawler, string $name): ?string
-    {
-        $remoteFilePath = self::getCoatOfArmsRemoteUri($crawler, $name);
-
-        if ($remoteFilePath === null) {
-            return null;
-        }
-        $contents = file_get_contents($remoteFilePath);
-        $directory = app()->basePath() . '/storage/app/public/images/coat-of-arms/';
-        $fileName = Str::uuid()->toString() . '.' . Str::afterLast($remoteFilePath, '.');
-
-        if (is_dir($directory) === false) {
-            mkdir($directory, 0777, true);
-        }
-
-        return File::put($directory . $fileName, $contents) ? $fileName : null;
-    }
 
     private static function getCoatOfArmsRemoteUri(Crawler $crawler, string $name): ?string
     {

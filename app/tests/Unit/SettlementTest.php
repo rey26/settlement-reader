@@ -7,41 +7,65 @@ use App\Entity\Settlement;
 
 class SettlementTest extends TestCase
 {
-    public function testGetterAndSetterMethods(): void
+    public function testSetAndGetAttributes()
     {
         $settlement = new Settlement();
 
-        $settlement->setName('Example Town');
-        $settlement->setMayorName('John Mayor');
-        $settlement->setCityHallAddress('123 Main St');
-        $settlement->setPhone('555-123-4567');
-        $settlement->setFax('555-987-6543');
-        $settlement->setEmail('example@example.com');
-        $settlement->setCoatOfArmsPath('/path/to/coat_of_arms.png');
-        $settlement->setWebAddress('http://exampletown.com');
+        $settlement->setName('Test Name');
+        $this->assertEquals('Test Name', $settlement->getName());
 
-        $this->assertEquals('Example Town', $settlement->getName());
-        $this->assertEquals('John Mayor', $settlement->getMayorName());
-        $this->assertEquals('123 Main St', $settlement->getCityHallAddress());
-        $this->assertEquals('555-123-4567', $settlement->getPhone());
-        $this->assertEquals('555-987-6543', $settlement->getFax());
-        $this->assertEquals('example@example.com', $settlement->getEmail());
-        $this->assertEquals('/path/to/coat_of_arms.png', $settlement->getCoatOfArmsPath());
-        $this->assertEquals('http://exampletown.com', $settlement->getWebAddress());
+        $settlement->setMayorName('Test Mayor');
+        $this->assertEquals('Test Mayor', $settlement->getMayorName());
+
+        $settlement->setCityHallAddress('Test Address');
+        $this->assertEquals('Test Address', $settlement->getCityHallAddress());
+
+        $settlement->setPhone('123456789');
+        $this->assertEquals('123456789', $settlement->getPhone());
+
+        $settlement->setFax('987654321');
+        $this->assertEquals('987654321', $settlement->getFax());
+
+        $settlement->setEmail('test@example.com');
+        $this->assertEquals('test@example.com', $settlement->getEmail());
+
+        $settlement->setCoatOfArmsPath('coat_of_arms.jpg');
+        $this->assertEquals('coat_of_arms.jpg', $settlement->getCoatOfArmsPath());
+
+        $settlement->setCoatOfArmsPathRemote('http://example.com');
+        $this->assertEquals('http://example.com', $settlement->getCoatOfArmsPathRemote());
+
+        $settlement->setWebAddress('http://example.com');
+        $this->assertEquals('http://example.com', $settlement->getWebAddress());
     }
 
-    public function testChildSettlements(): void
+    public function testAddRemoveChildSettlement()
     {
-        $settlement = new Settlement();
+        $parentSettlement = new Settlement();
         $childSettlement = new Settlement();
 
-        $settlement->addChildSettlement($childSettlement);
+        $parentSettlement->addChildSettlement($childSettlement);
 
-        $this->assertTrue($settlement->getChildSettlements()->contains($childSettlement));
+        $this->assertTrue($parentSettlement->getChildSettlements()->contains($childSettlement));
+        $this->assertEquals($parentSettlement, $childSettlement->getParent());
 
-        $settlement->removeChildSettlement($childSettlement);
+        $parentSettlement->removeChildSettlement($childSettlement);
 
-        $this->assertFalse($settlement->getChildSettlements()->contains($childSettlement));
+        $this->assertFalse($parentSettlement->getChildSettlements()->contains($childSettlement));
         $this->assertNull($childSettlement->getParent());
+    }
+
+    public function testToString()
+    {
+        $settlement = new Settlement();
+        $settlement->setName('Test Name');
+
+        $this->assertEquals('Test Name', (string) $settlement);
+    }
+
+    public function testGetId()
+    {
+        $settlement = new Settlement();
+        $this->assertNull($settlement->getId());
     }
 }

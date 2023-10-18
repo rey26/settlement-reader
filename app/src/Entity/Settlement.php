@@ -37,6 +37,9 @@ class Settlement
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $coatOfArmsPath = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coatOfArmsPathRemote = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childSettlements')]
     private ?self $parent = null;
 
@@ -141,6 +144,18 @@ class Settlement
     public function setCoatOfArmsPath(?string $coatOfArmsPath): static
     {
         $this->coatOfArmsPath = $coatOfArmsPath;
+
+        return $this;
+    }
+
+    public function getCoatOfArmsPathRemote(): ?string
+    {
+        return $this->coatOfArmsPathRemote;
+    }
+
+    public function setCoatOfArmsPathRemote(?string $coatOfArmsPathRemote): static
+    {
+        $this->coatOfArmsPathRemote = $coatOfArmsPathRemote;
 
         return $this;
     }

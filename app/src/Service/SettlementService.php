@@ -16,6 +16,7 @@ class SettlementService
         #[Autowire(env: 'SETTLEMENT_SOURCE_URL')] protected string $url,
         protected SettlementRepository $settlementRepository,
         protected EntityManagerInterface $em,
+        protected FileHandler $fileHandler,
         protected HttpBrowser $client = new HttpBrowser(),
         protected array $districtSettlements = [],
         protected array $settlements = [],
@@ -85,6 +86,26 @@ class SettlementService
         }
 
         $this->em->persist($settlement);
+
+        return $this;
+    }
+
+    public function downloadCoatOfArmsLocally(): static
+    {
+        $iteration = 0;
+
+        foreach ($this->settlementRepository->findAll() as $settlement) {
+            $localCoatOfArmsPath = $this->fileHandler->downloadFile($settlement->getCoatOfArmsPathRemote());
+            $settlement->setCoatOfArmsPath($localCoatOfArmsPath);
+            $this->em->persist($settlement);
+
+            $iteration++;
+
+            if ($iteration % 20 === 0) {
+                $this->em->flush();
+            }
+        }
+        $this->em->flush();
 
         return $this;
     }
