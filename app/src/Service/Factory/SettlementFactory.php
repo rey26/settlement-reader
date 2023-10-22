@@ -17,7 +17,7 @@ class SettlementFactory
             ->setFax(self::getTdValueByPreviousElement($crawler, 'Fax:'))
             ->setEmail(self::getTdValueByPreviousElement($crawler, 'Email:'))
             ->setWebAddress(self::getTdValueByPreviousElement($crawler, 'Web:'))
-            ->setCoatOfArmsPath(self::getCoatOfArmsRemoteUri($crawler, $name))
+            ->setCoatOfArmsPathRemote(self::getCoatOfArmsRemoteUri($crawler, $name))
         ;
 
         return $settlement;
@@ -32,7 +32,7 @@ class SettlementFactory
             ->setFax(self::getTdValueByPreviousElement($crawler, 'Fax:'))
             ->setEmail(self::getTdValueByPreviousElement($crawler, 'Email:'))
             ->setWebAddress(self::getTdValueByPreviousElement($crawler, 'Web:'))
-            ->setCoatOfArmsPath(self::getCoatOfArmsRemoteUri($crawler, $settlement->getName()))
+            ->setCoatOfArmsPathRemote(self::getCoatOfArmsRemoteUri($crawler, $settlement->getName()))
         ;
 
         return $settlement;
@@ -54,12 +54,17 @@ class SettlementFactory
 
     private static function getCityHallAddress(Crawler $crawler): string
     {
-        return 'empty';
         $email = $crawler->filter('td')
             ->reduce(function (Crawler $node) {
                 return $node->text() === 'Email:';
             })
-            ->first();
+        ;
+
+        if ($email->count() <= 0) {
+            return 'empty';
+        }
+
+        $email = $email->first();
 
         $street = $email
             ->previousAll()
@@ -84,7 +89,7 @@ class SettlementFactory
             })
             ->first();
 
-        if ($imageElement) {
+        if ($imageElement->count() > 0) {
             return $imageElement->attr('src');
         }
 

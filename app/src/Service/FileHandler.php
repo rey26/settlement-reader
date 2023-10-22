@@ -6,7 +6,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class FileHandler
 {
-    public function __construct(#[Autowire(param: 'coat_of_arms_path')] protected string $coatOfArmsPath)
+    public function __construct(#[Autowire(param: 'coat_of_arms_directory')] protected string $coatOfArmsDirectory)
     {
     }
 
@@ -16,7 +16,7 @@ class FileHandler
             return null;
         }
         $localFileName = basename($url);
-        $localPath = $this->coatOfArmsPath . '/' . $localFileName;
+        $localPath = $this->coatOfArmsDirectory . '/' . $localFileName;
 
         // Check if the file already exists locally
         if (file_exists($localPath)) {

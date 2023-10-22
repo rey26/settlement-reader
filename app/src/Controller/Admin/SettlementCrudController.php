@@ -11,9 +11,19 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\UrlField;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class SettlementCrudController extends AbstractCrudController
 {
+    protected ?string $coatOfArmsDirectory = null;
+
+    #[Required]
+    public function loadDependencies(#[Autowire(param: 'coat_of_arms_directory')] string $coatOfArmsDirectory): void
+    {
+        $this->coatOfArmsDirectory = $coatOfArmsDirectory;
+    }
+
     public static function getEntityFqcn(): string
     {
         return Settlement::class;
@@ -40,7 +50,7 @@ class SettlementCrudController extends AbstractCrudController
         yield AssociationField::new('childSettlements');
         yield UrlField::new('coatOfArmsPathRemote')->hideOnIndex();
         yield ImageField::new('coatOfArmsPath')
-            ->setUploadDir('public/uploads/coat-of-arms')
+            ->setUploadDir($this->coatOfArmsDirectory)
             ->setBasePath('uploads/coat-of-arms')
             ->setUploadedFileNamePattern('[slug].[extension]')
             ->setLabel('Coat of Arms Image')
