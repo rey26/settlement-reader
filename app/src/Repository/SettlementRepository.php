@@ -20,4 +20,17 @@ class SettlementRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Settlement::class);
     }
+
+    /** @return Settlement[] */
+    public function findDistrictSettlements(): array
+    {
+        $expr = $this->getEntityManager()->getExpressionBuilder();
+
+        return $this->createQueryBuilder('s')->where($expr->isNull('s.parent'))->getQuery()->getResult();
+    }
+
+    public function removeAllSettlements(): void
+    {
+        $this->getEntityManager()->createQueryBuilder()->delete()->from(Settlement::class, 's')->getQuery()->execute();
+    }
 }

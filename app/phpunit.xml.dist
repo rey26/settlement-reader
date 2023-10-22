@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         bootstrap="vendor/autoload.php"
+         convertDeprecationsToExceptions="true"
+>
+    <php>
+        <ini name="display_errors" value="1" />
+        <ini name="error_reporting" value="-1" />
+        <server name="APP_ENV" value="test" force="true" />
+        <!-- Other environment variables or Symfony-specific variables can be set here -->
+    </php>
+
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+            <!-- Add more directories to include in code coverage reports -->
+        </include>
+    </coverage>
+
+    <filter>
+        <whitelist>
+            <directory>src</directory>
+            <exclude>
+                <directory>src/DataFixtures</directory>
+                <!-- Add directories to exclude from code coverage reports -->
+            </exclude>
+        </whitelist>
+    </filter>
+    
+    <listeners>
+        <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener" />
+        <!-- Add more Symfony-specific listeners if needed -->
+    </listeners>
+
+    <!-- Add custom PHPUnit extensions or configuration if necessary -->
+
+</phpunit>

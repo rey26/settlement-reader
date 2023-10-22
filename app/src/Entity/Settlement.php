@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SettlementRepository::class)]
+#[ORM\Index(['name'])]
 class Settlement
 {
     #[ORM\Id]
@@ -24,7 +25,7 @@ class Settlement
     #[ORM\Column(length: 255)]
     private ?string $cityHallAddress = null;
 
-    #[ORM\Column(length: 30, nullable: true)]
+    #[ORM\Column(length: 130, nullable: true)]
     private ?string $phone = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -36,15 +37,26 @@ class Settlement
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $coatOfArmsPath = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coatOfArmsPathRemote = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childSettlements')]
     private ?self $parent = null;
 
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $childSettlements;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $webAddress = null;
+
     public function __construct()
     {
         $this->childSettlements = new ArrayCollection();
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
     }
 
     public function getId(): ?int
@@ -136,6 +148,18 @@ class Settlement
         return $this;
     }
 
+    public function getCoatOfArmsPathRemote(): ?string
+    {
+        return $this->coatOfArmsPathRemote;
+    }
+
+    public function setCoatOfArmsPathRemote(?string $coatOfArmsPathRemote): static
+    {
+        $this->coatOfArmsPathRemote = $coatOfArmsPathRemote;
+
+        return $this;
+    }
+
     public function getParent(): ?self
     {
         return $this->parent;
@@ -174,6 +198,18 @@ class Settlement
                 $childSettlement->setParent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getWebAddress(): ?string
+    {
+        return $this->webAddress;
+    }
+
+    public function setWebAddress(?string $webAddress): static
+    {
+        $this->webAddress = $webAddress;
 
         return $this;
     }
