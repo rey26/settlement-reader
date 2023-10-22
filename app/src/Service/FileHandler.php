@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Polyfill\Intl\Normalizer\Normalizer;
 
 class FileHandler
 {
@@ -10,18 +12,14 @@ class FileHandler
     {
     }
 
-    public function downloadFile(?string $url): ?string
+    public function downloadFile(?string $url, string $settlementName): ?string
     {
         if (empty($url)) {
             return null;
         }
-        $localFileName = basename($url);
+        $extension = pathinfo(basename($url), PATHINFO_EXTENSION);
+        $localFileName = self::generateSlug($settlementName) . '.' . $extension;
         $localPath = $this->coatOfArmsDirectory . '/' . $localFileName;
-
-        // Check if the file already exists locally
-        if (file_exists($localPath)) {
-            return $localPath;
-        }
 
         // Download the file from the URL
         $fileContents = file_get_contents($url);
@@ -33,6 +31,18 @@ class FileHandler
         // Save the file locally
         file_put_contents($localPath, $fileContents);
 
-        return $localPath;
+        return $localFileName;
+    }
+
+    public static function generateSlug(string $string): string
+    {
+        // Create an instance of the AsciiSlugger
+        $slugger = new AsciiSlugger();
+
+        // Normalize the input string (remove accents)
+        $normalizedString = Normalizer::normalize($string);
+
+        // Use the AsciiSlugger to create a slug from the normalized string
+        return $slugger->slug($normalizedString)->lower()->toString();
     }
 }

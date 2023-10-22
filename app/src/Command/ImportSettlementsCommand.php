@@ -73,6 +73,7 @@ class ImportSettlementsCommand extends Command
         $districtUrls = $this->settlementService->loadCurrentSettlements()->getAllDistricts();
 
         foreach ($districtUrls as $district => $districtUrl) {
+            echo $district . PHP_EOL;
             $settlementUrls = $this->settlementService->getSettlementsForDistrict($districtUrl);
 
             foreach ($settlementUrls as $settlementUrl) {
@@ -80,6 +81,8 @@ class ImportSettlementsCommand extends Command
             }
             $this->em->flush();
         }
+        $this->settlementService->setParentsOnSettlements();
+        $this->em->flush();
 
         return 'Settlement data imported successfully';
     }

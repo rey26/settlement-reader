@@ -1,0 +1,10 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set web_addresses = field.formattedValue %}
+
+{% if web_addresses %}
+    {% for web_address in web_addresses|split(' ') %}
+        <a target="_blank" href="{{ web_address }}">{{ web_address }}</a>
+    {% endfor %}
+{% endif %}

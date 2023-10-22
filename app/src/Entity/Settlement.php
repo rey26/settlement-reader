@@ -43,6 +43,8 @@ class Settlement
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childSettlements')]
     private ?self $parent = null;
 
+    private ?string $parentName = null;
+
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     private Collection $childSettlements;
 
@@ -168,6 +170,18 @@ class Settlement
     public function setParent(?self $parent): static
     {
         $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getParentName(): ?string
+    {
+        return $this->parentName;
+    }
+
+    public function setParentName(?string $parentName): static
+    {
+        $this->parentName = $parentName;
 
         return $this;
     }

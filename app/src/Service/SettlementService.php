@@ -12,14 +12,21 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class SettlementService
 {
+    /** @var Settlement[] */
+    protected array $districtSettlements = [];
+
+    /** @var Settlement[] */
+    protected array $settlements = [];
+
+    /** @var Settlement[] */
+    protected array $createdSettlements = [];
+
     public function __construct(
         #[Autowire(env: 'SETTLEMENT_SOURCE_URL')] protected string $url,
         protected SettlementRepository $settlementRepository,
         protected EntityManagerInterface $em,
         protected FileHandler $fileHandler,
         protected HttpBrowser $client = new HttpBrowser(),
-        protected array $districtSettlements = [],
-        protected array $settlements = [],
     ) {
     }
 
@@ -88,7 +95,10 @@ class SettlementService
         }
 
         if ($districtName !== $name) {
-            $settlement->setParent($districtSettlement);
+            $settlement->setParentName($districtName);
+            $this->createdSettlements[] = $settlement;
+        } else {
+            $this->districtSettlements[$name] = $settlement;
         }
 
         $this->em->persist($settlement);
@@ -96,12 +106,15 @@ class SettlementService
         return $this;
     }
 
-    public function downloadCoatOfArmsLocally(): static
+    public function downloadCoatOfArmsLocally(): int
     {
         $iteration = 0;
 
         foreach ($this->settlementRepository->findAll() as $settlement) {
-            $localCoatOfArmsPath = $this->fileHandler->downloadFile($settlement->getCoatOfArmsPathRemote());
+            $localCoatOfArmsPath = $this->fileHandler->downloadFile(
+                $settlement->getCoatOfArmsPathRemote(),
+                $settlement->getName(),
+            );
             $settlement->setCoatOfArmsPath($localCoatOfArmsPath);
             $this->em->persist($settlement);
 
@@ -113,7 +126,7 @@ class SettlementService
         }
         $this->em->flush();
 
-        return $this;
+        return $iteration;
     }
 
     public function deleteAllSettlements(): static
@@ -121,6 +134,15 @@ class SettlementService
         $this->settlementRepository->removeAllSettlements();
 
         return $this;
+    }
+
+    public function setParentsOnSettlements(): void
+    {
+        foreach ($this->createdSettlements as $settlement) {
+            $districtSettlement = $this->findDistrictSettlementByName($settlement->getParent());
+
+            $settlement->setParent($districtSettlement);
+        }
     }
 
     private function findDistrictSettlementByName(string $name): ?Settlement

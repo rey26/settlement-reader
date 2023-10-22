@@ -1,0 +1,10 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set phone_numbers = field.formattedValue %}
+
+{% if phone_numbers %}
+    {% for number in phone_numbers|split(',') %}
+        <a href="tel:{{ number }}">{{ number }}</a>
+    {% endfor %}
+{% endif %}
