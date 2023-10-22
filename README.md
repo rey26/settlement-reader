@@ -10,13 +10,16 @@ Reads data about cities and villages in Slovakia from website [e-obce.sk](https:
 
 ### ImportSettlementsCommand
 
-This command downloads data from external site, maps it to project entities and stores to DB. In order to also download coat of arms of each available city/village, run the command with option `coa-download`
+This command downloads data from external site, maps it to project entities and stores to DB. In order to also download coat of arms of each available city/village, run the command with option `coa-download`.
+The option to delete all settlements is also available.
 
 ```sh
 docker-compose exec php /bin/bash
 php bin/console app:import-settlements
 # download coat of arms locally
 php bin/console app:import-settlements --coa-download
+# delete settlements
+php bin/console app:import-settlements --delete-settlements
 ```
 
 ## Testing

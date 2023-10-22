@@ -21,7 +21,11 @@ class SettlementService
         protected array $districtSettlements = [],
         protected array $settlements = [],
     ) {
-        foreach ($settlementRepository->findAll() as $settlement) {
+    }
+
+    public function loadCurrentSettlements(): static
+    {
+        foreach ($this->settlementRepository->findAll() as $settlement) {
             $key = $settlement->getName();
 
             if ($settlement->getParent()) {
@@ -31,6 +35,8 @@ class SettlementService
                 $this->districtSettlements[$key] = $settlement;
             }
         }
+
+        return $this;
     }
 
     public function getAllDistricts(): array
@@ -106,6 +112,13 @@ class SettlementService
             }
         }
         $this->em->flush();
+
+        return $this;
+    }
+
+    public function deleteAllSettlements(): static
+    {
+        $this->settlementRepository->removeAllSettlements();
 
         return $this;
     }
