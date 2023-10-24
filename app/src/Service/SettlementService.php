@@ -82,7 +82,7 @@ class SettlementService
         $name = $crawler->filter('td[class="obecmenuhead"]')->text();
         $districtSettlement = $this->findDistrictSettlementByName($districtName);
 
-        if ($districtName === $name) {
+        if (str_contains($name, $districtName) || str_contains($name, 'Brati')) {
             $settlement = $districtSettlement;
         } else {
             $settlement = $this->findSettlementByNameAndDistrict($name, $districtName);
@@ -139,14 +139,17 @@ class SettlementService
     public function setParentsOnSettlements(): void
     {
         foreach ($this->createdSettlements as $settlement) {
-            $districtSettlement = $this->findDistrictSettlementByName($settlement->getParent());
+            $districtSettlement = $this->findDistrictSettlementByName($settlement->getParentName());
 
             $settlement->setParent($districtSettlement);
         }
     }
 
-    private function findDistrictSettlementByName(string $name): ?Settlement
+    private function findDistrictSettlementByName(?string $name): ?Settlement
     {
+        if ($name === null) {
+            return null;
+        }
         if (array_key_exists($name, $this->districtSettlements)) {
             return $this->districtSettlements[$name];
         }
@@ -156,7 +159,7 @@ class SettlementService
 
     private function findSettlementByNameAndDistrict(string $name, string $districtName): ?Settlement
     {
-        $key = $districtName . '__' . $name;
+        $key = $name . '__' . $districtName;
 
         if (array_key_exists($key, $this->settlements)) {
             return $this->settlements[$key];
